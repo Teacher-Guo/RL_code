@@ -1,0 +1,6 @@
+Thu Oct 31 09:14:01 2019
+ERROR: Could not open activation key file D:\mjpro131_win64\mjpro131in\mjkey.txt
+
+Thu Oct 31 09:15:15 2019
+ERROR: Could not open activation key file D:\mjpro131_win64\mjpro131in\mjkey.txt
+

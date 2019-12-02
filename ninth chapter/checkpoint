@@ -1,0 +1,2 @@
+model_checkpoint_path: "current_bset_ppo_pendulum"
+all_model_checkpoint_paths: "current_bset_ppo_pendulum"

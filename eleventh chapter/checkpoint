@@ -1,0 +1,2 @@
+model_checkpoint_path: "current_best_trained_dynamic_pendulum"
+all_model_checkpoint_paths: "current_best_trained_dynamic_pendulum"

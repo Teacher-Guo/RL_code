@@ -65,7 +65,7 @@ if __name__ == "__main__":
         yuanyang.bird_male_position = yuanyang.state_to_position(s)
         yuanyang.render()
         time.sleep(0.2)
-        os.system("pause")
+        # os.system("pause")
         step_num += 1
         s_, r, t = yuanyang.transform(s, a)
         if t == True or step_num > 20:

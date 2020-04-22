@@ -8,21 +8,22 @@ class KB_Game:
         self.action_counts = np.array([0,0,0])
         self.current_cumulative_rewards = 0.0
         self.actions = [1, 2, 3]
+        self.actions_num = np.array([0, 0, 0])
         self.counts = 0
         self.counts_history = []
         self.cumulative_rewards_history=[]
         self.a = 1
         self.reward = 0
-    def step(self, a):
-        r = 0
-        if a == 1:
-            r = np.random.normal(1,1)
-        if a == 2:
-            r = np.random.normal(2,1)
-        if a == 3:
-            r = np.random.normal(1.5,1)
-        return r
-
+    def reset(self):
+        self.q = np.array([0.0, 0.0, 0.0])
+        self.action_counts = np.array([0, 0, 0])
+        self.current_cumulative_rewards = 0.0
+        self.counts = 0
+        self.counts_history = []
+        self.cumulative_rewards_history = []
+        self.a = 1
+        self.reward = 0
+        self.actions_num=np.array([0,0,0])
     def choose_action(self, policy, **kwargs):
         action = 0
         if policy == 'e_greedy':
@@ -42,6 +43,15 @@ class KB_Game:
             p = np.exp(self.q/tau)/(np.sum(np.exp(self.q/tau)))
             action = np.random.choice([1,2,3], p = p.ravel())
         return action
+    def step(self, a):
+        r = 0
+        if a == 1:
+            r = np.random.normal(1,1)
+        if a == 2:
+            r = np.random.normal(2,1)
+        if a == 3:
+            r = np.random.normal(1.5,1)
+        return r
     def train(self, play_total, policy, **kwargs):
         reward_1 = []
         reward_2 = []
@@ -55,6 +65,12 @@ class KB_Game:
             if policy == 'boltzmann':
                 action = self.choose_action(policy, temperature=kwargs['temperature'])
             self.a = action
+            if action == 1:
+                self.actions_num[0] += 1
+            if action == 2:
+                self.actions_num[1] += 1
+            if action == 3:
+                self.actions_num[2] += 1
             # print(self.a)
             #与环境交互一次
             self.r = self.step(self.a)
@@ -66,7 +82,8 @@ class KB_Game:
             reward_2.append([self.q[1]])
             reward_3.append([self.q[2]])
             self.current_cumulative_rewards += self.r
-            self.cumulative_rewards_history.append(self.current_cumulative_rewards)
+            #self.cumulative_rewards_history.append(self.current_cumulative_rewards)
+            self.cumulative_rewards_history.append(self.current_cumulative_rewards/self.counts)
             self.counts_history.append(i)
             # self.action_history.append(self.a)
         # plt.figure(1)
@@ -78,17 +95,9 @@ class KB_Game:
         # plt.plot(self.counts_history, self.cumulative_rewards_history,'k')
         # plt.draw()
         # plt.show()
-
-    def reset(self):
-        self.q = np.array([0.0, 0.0, 0.0])
-        self.action_counts = np.array([0, 0, 0])
-        self.current_cumulative_rewards = 0.0
-        self.counts = 0
-        self.counts_history = []
-        self.cumulative_rewards_history = []
-        self.a = 1
-        self.reward = 0
     def plot(self, colors, policy,style):
+        print(policy,self.q)
+        print("三个动作的次数",self.actions_num)
         plt.figure(1)
         plt.plot(self.counts_history,self.cumulative_rewards_history,colors,label=policy,linestyle=style)
         plt.legend()
@@ -111,7 +120,7 @@ if __name__ == '__main__':
     k_gamble.train(play_total=total, policy='boltzmann',temperature=1)
     k_gamble.plot(colors='b', policy='boltzmann',style='--')
     k_gamble.reset()
-    k_gamble.train(play_total=total, policy='ucb', c_ratio=0.5)
+    k_gamble.train(play_total=total, policy='ucb', c_ratio=0.2)
     k_gamble.plot(colors='g', policy='ucb',style='-')
     plt.show()
 

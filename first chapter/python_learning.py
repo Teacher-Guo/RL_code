@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import *
-#python 类学习
+#python 类学习，此文档为直播课程的源代码
+# 直播地址为https://appQTULvsIE4217.h5.xeknow.com/st/0E4NcvLAZ
 ####1.print语句学习################
 print("hello reinforcement learning!")
 ####1.1打印字符串：%s##############

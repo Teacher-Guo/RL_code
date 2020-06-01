@@ -3,7 +3,7 @@ import numpy as np
 import gym
 import matplotlib.pyplot as plt
 RENDER = False
-
+#调用pytorch的分布函数
 #利用当前策略进行采样，产生数据
 class Sample():
     def __init__(self,env, policy_net):
@@ -72,8 +72,8 @@ class Policy_Net():
         self.current_act = tf.placeholder(tf.int32, [None,])
         self.current_reward = tf.placeholder(tf.float32, [None,])
         #2. 构建损失函数
-        neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.all_act, labels=self.current_act)
-        self.loss = tf.reduce_mean(neg_log_prob*self.current_reward)
+        self.neg_log_prob = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.all_act, labels=self.current_act)
+        self.loss = tf.reduce_mean(self.neg_log_prob*self.current_reward)
         #3. 定义一个优化器
         self.train_op = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
         #4. tf工程
@@ -92,8 +92,9 @@ class Policy_Net():
         return action[0]
     #定义训练
     def train_step(self, state_batch, label_batch, reward_batch):
-        loss, _ =self.sess.run([self.loss, self.train_op], feed_dict={self.obs:state_batch, self.current_act:label_batch, self.current_reward:reward_batch})
-        return loss
+        loss,_,neg=self.sess.run([self.loss, self.train_op,self.neg_log_prob], feed_dict={self.obs:state_batch, self.current_act:label_batch, self.current_reward:reward_batch})
+        return loss,neg
+
     #定义存储模型函数
     def save_model(self, model_path):
         self.saver.save(self.sess, model_path)
@@ -107,6 +108,7 @@ class Policy_Net():
         action = np.random.choice(range(prob_weights.shape[1]),p=prob_weights.ravel())
         # print("action",action)
         return action
+#定义策略训练
 def policy_train(env, brain, sample, training_num):
     reward_sum = 0.0
     reward_sum_line = []
@@ -115,9 +117,12 @@ def policy_train(env, brain, sample, training_num):
         temp = 0
         training_time.append(i)
         # 采样10个episode
-        train_obs, train_actions, train_rs = sample.sample_episodes(10)
+        train_obs, train_actions, train_rs = sample.sample_episodes(1)
         # 利用采样的数据进行梯度学习
-        loss = brain.train_step(train_obs, train_actions, train_rs)
+        loss,neg_log = brain.train_step(train_obs, train_actions, train_rs)
+        # print("neg_log",neg_log)
+        # print("train_rs",train_rs)
+        # print("loss", loss)
         # print("current loss is %f"%loss)
         if i == 0:
             reward_sum = policy_test(env, brain,False,1)
@@ -134,6 +139,7 @@ def policy_train(env, brain, sample, training_num):
     plt.xlabel("training number")
     plt.ylabel("score")
     plt.show()
+
 def policy_test(env, policy, render, test_num):
     for i in range(test_num):
         observation = env.reset()
